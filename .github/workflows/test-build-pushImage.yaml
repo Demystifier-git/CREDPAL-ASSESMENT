@@ -28,6 +28,7 @@ jobs:
 
       #  Install dependencies
       - name: Install dependencies
+        working-directory: ./src
         run: npm install
 
       #  Run tests 
