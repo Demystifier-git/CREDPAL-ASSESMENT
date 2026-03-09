@@ -1,4 +1,4 @@
-name: test-build-pushImage to DockerHub
+name: Node.js Docker CI/CD
 
 on:
   push:
@@ -16,28 +16,37 @@ jobs:
       IMAGE_NAME: credpal-assignment-app
 
     steps:
+      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # 2️⃣ Set up Node.js (optional if you run tests in container)
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 20
 
+      # 3️⃣ Run simple tests inside Docker
       - name: Run tests inside Docker
         run: |
           docker build -t ${{ env.IMAGE_NAME }} ./src
           docker run --rm ${{ env.IMAGE_NAME }} node -e "console.log('Test passed')"
 
+      # 4️⃣ Log in to Docker Hub
       - name: Log in to DockerHub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Build & tag for Docker Hub directly
-      - name: Build & tag Docker image as v1
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/credpal-assignment-app:v1 ./src
+      # 5️⃣ Build Docker image for push (with tags latest and v1)
+      - name: Build & tag Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest ./src
+          docker tag ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:v1
 
-      - name: Push Docker image
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/credpal-assignment-app:v1
+      # 6️⃣ Push Docker images to DockerHub
+      - name: Push Docker images
+        run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:v1
