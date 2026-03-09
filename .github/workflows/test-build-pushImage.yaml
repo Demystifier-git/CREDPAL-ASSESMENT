@@ -38,13 +38,10 @@ jobs:
           docker run --rm ${{ env.IMAGE_NAME }} node -e "console.log('Test passed')"
 
       # 5️⃣ Tag Docker image for DockerHub
-      - name: Tag Docker images
+      - name: Build, tag & push Docker image
         run: |
+          docker build -t ${{ env.IMAGE_NAME }} ./src
           docker tag ${{ env.IMAGE_NAME }} ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest
           docker tag ${{ env.IMAGE_NAME }} ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:v1
-
-      # 6️⃣ Push Docker images to DockerHub
-      - name: Push Docker images
-        run: |
           docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:v1
