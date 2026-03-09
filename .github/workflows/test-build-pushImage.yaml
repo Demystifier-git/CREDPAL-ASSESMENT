@@ -26,7 +26,7 @@ jobs:
 
       - name: Build & test Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest ./credpal-assignment/src
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest ./src
           docker run --rm ${{ secrets.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest node -e "console.log('Test passed')"
 
       - name: Log in to DockerHub
