@@ -30,8 +30,9 @@ jobs:
       # 1️⃣ Upload code to S3 as a tarball
       - name: Upload code to S3
         run: |
-          tar -czf app.tar.gz .
+          tar -czf app.tar.gz . --warning=no-file-changed
           aws s3 cp app.tar.gz s3://$S3_BUCKET/app.tar.gz
+          
 
       # 2️⃣ Deploy code to EC2 via SSM
       - name: Deploy code via SSM
