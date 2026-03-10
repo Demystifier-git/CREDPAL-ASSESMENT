@@ -1,4 +1,4 @@
-name: Node.js Docker CI/CD
+name: test-build-push to dockerhub
 
 on:
   push:
