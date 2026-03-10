@@ -46,8 +46,8 @@ cp database/.env.example database/.env
 
 Start the application and database using Docker Compose
 
-docker compose up -d
-docker compose up --build
+docker compose up -d, docker compose up --build
+
 
 The application will be accessible on http://localhost:3000
 
