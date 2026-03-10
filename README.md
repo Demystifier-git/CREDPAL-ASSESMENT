@@ -32,11 +32,9 @@ The application runs on port 3000 and is fully containerized using Docker. The i
 - Node.js (optional for local development outside containers)
 - PostgreSQL (optional for local development outside containers)
 
-### Running Locally
 
-1. Clone the repository:
 
-```bash
+
 git clone https://github.com/Demystifier-git/CREDPAL-ASSESMENT.git
 
 
@@ -65,7 +63,9 @@ curl -X POST https://<your-app-domain>/process \
   -H "Content-Type: application/json" \
   -d '{"key": "value"}'
 
-This application can accessed live at app.delightdavid.online
+This application can accessed live at app.delightdavid.online/health
+                                      app.delightdavid.online/status
+                                      app.delightdavid.online/process
 
 
 ##CI/CD PIPELINE
@@ -98,11 +98,11 @@ ROUTE53 configured for domain routing
 ACM configured for ssl certifcates
 Health checks configured as well 
 
-##Deployment strategy
+## Deployment strategy
 5. Zero-downtime deployment: Implemented using rolling updates via Docker Compose. New containers are started before stopping the old ones.
 Manual approval: Required for production deployment using GitHub Actions environment protection rules.
 
-##Security and observability
+## Security and observability
 6. security and observability:
   Secrets such as database credentials, AWS keys, and Docker credentials are stored securely using GitHub Secrets and environment variables.
   HTTPS is enabled on the Application Load Balancer.
@@ -110,7 +110,7 @@ Manual approval: Required for production deployment using GitHub Actions environ
   Basic logging is implemented using console logs for server startup, database connection, and endpoint actions.
   Health checks are exposed via /health endpoint for monitoring.
 
-##Security and observability
+## key-decisions
 7. Docker Multi-stage Build: Ensures small, production-ready images with only necessary dependencies.
 SSM Deployment: EC2 instances are updated via AWS SSM for security and automation.
 GitHub Actions: Provides CI/CD automation with production manual approval.
