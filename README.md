@@ -74,35 +74,38 @@ This application can accessed live at app.delightdavid.online/health
 3. CI/CD PIPELINE
 
 The CI/CD workflow is implemented using GitHub Actions. It includes the following steps:
-Checkout repository
-Configure AWS credentials
-Package the application into a tarball
-Upload the tarball to S3
-configure Dockerhub credentials
-Deploy the application to the private EC2 instance via AWS SSM
-Switch to root and start containers using Docker Compose
-The pipeline is triggered by:
-Pushes to the main branch
-Manual workflow dispatch
-Manual approval is required before deploying to the production environment to ensure controlled releases.
+
+- Checkout repository
+- Configure AWS credentials
+- Package the application into a tarball
+- Upload the tarball to S3
+- configure Dockerhub credentials
+- Deploy the application to the private EC2 instance via AWS SSM
+- Switch to root and start containers using Docker Compose
+- The pipeline is triggered by:
+- Pushes to the main branch
+- Manual workflow dispatch
+- Manual approval is required before deploying to the production environment to ensure controlled releases.
 
 ## Infrastructure
 4. Infrastructure
 
 Infrastructure is provisioned using Terraform:
-VPC with public and private subnets
-Security groups for EC2,Load Balancer and VPC
-EC2 instance running the application
-Application Load Balancer with HTTPS configured
-Target group for traffic distribution
-IAM roles and instance profile for SSM and S3 access
-ROUTE53 configured for domain routing
-ACM configured for ssl certifcates
-Health checks configured as well 
+
+- VPC with public and private subnets
+- Security groups for EC2,Load Balancer and VPC
+- EC2 instance running the application
+- Application Load Balancer with HTTPS configured
+- Target group for traffic distribution
+- IAM roles and instance profile for SSM and S3 access
+- ROUTE53 configured for domain routing
+- ACM configured for ssl certifcates
+- Health checks configured as well 
 
 ## Deployment strategy
-5. Zero-downtime deployment: Implemented using rolling updates via Docker Compose. New containers are started before stopping the old ones.
-Manual approval: Required for production deployment using GitHub Actions environment protection rules.
+5. Zero-downtime deployment: 
+- Implemented using rolling updates via Docker Compose. New containers are started before stopping the old ones.
+- Manual approval: Required for production deployment using GitHub Actions environment protection rules.
 
 ## Security and observability
 6. security and observability:
