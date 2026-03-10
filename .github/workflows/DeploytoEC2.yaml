@@ -29,16 +29,29 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # 3️⃣ Package the application
+      # 3️⃣ Package the application safely
       - name: Package app
         run: |
-          chmod -R u+rwX .
-          tar -czf app.tar.gz . --warning=no-file-changed
-          aws s3 cp app.tar.gz s3://$S3_BUCKET/app.tar.gz
+          echo "Listing current directory..."
+          ls -la
           
+          echo "Setting permissions..."
+          chmod -R u+rwX .
+          
+          echo "Creating tarball..."
+          tar --exclude=app.tar.gz -czf app.tar.gz .
+          
+          echo "Uploading tarball to S3..."
+          if aws s3 cp app.tar.gz s3://$S3_BUCKET/app.tar.gz; then
+            echo "Upload succeeded!"
+          else
+            echo "Upload failed!" && exit 1
+          fi
+
       # 4️⃣ Deploy app to EC2 via SSM
       - name: Deploy app to EC2
         run: |
+          echo "Sending deployment command via SSM..."
           aws ssm send-command \
             --targets "Key=instanceIds,Values=$EC2_INSTANCE_ID" \
             --document-name "AWS-RunShellScript" \
@@ -47,7 +60,9 @@ jobs:
               "sudo mkdir -p '"$APP_DIR"'",
               "sudo aws s3 cp s3://'"$S3_BUCKET"'/app.tar.gz /tmp/app.tar.gz",
               "sudo tar -xzf /tmp/app.tar.gz -C '"$APP_DIR"'",
-              "sudo chown -R ubuntu:ubuntu '"$APP_DIR"'"
+              "sudo chown -R ubuntu:ubuntu '"$APP_DIR"'",
+              "echo Deployment complete. Listing deployed files:",
+              "ls -la '"$APP_DIR"'"
             ]' \
             --region $AWS_REGION \
             --output json
