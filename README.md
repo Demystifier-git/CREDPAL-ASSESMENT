@@ -112,7 +112,7 @@ Infrastructure is provisioned using Terraform:
 - Health checks are exposed via /health endpoint for monitoring.
 
 ## key-decisions
-7. 
+7. key-decisions
 - Docker Multi-stage Build: Ensures small, production-ready images with only necessary dependencies.
 - SSM Deployment: EC2 instances are updated via AWS SSM for security and automation.
 - GitHub Actions: Provides CI/CD automation with production manual approval.
