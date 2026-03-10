@@ -28,14 +28,14 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      #  Deploy application code via SSM
-      - name: Deploy application code
+      #  Deploy application code via SSM as root
+      - name: Deploy application code as root
         run: |
-          echo "Deploying code to EC2 $EC2_INSTANCE_ID in $APP_DIR"
+          echo "Deploying code to EC2 $EC2_INSTANCE_ID in $APP_DIR as root"
           aws ssm send-command \
             --targets "Key=instanceIds,Values=$EC2_INSTANCE_ID" \
             --document-name "AWS-RunShellScript" \
-            --comment "Deploy app code" \
-            --parameters 'commands=["mkdir -p '"$APP_DIR"'", "rsync -av /github/workspace/ '"$APP_DIR"'"]' \
+            --comment "Deploy app code as root" \
+            --parameters 'commands=["sudo -i bash -c '\''mkdir -p '"$APP_DIR"' && rsync -av /github/workspace/ '"$APP_DIR"'\''"]' \
             --region $AWS_REGION \
             --output json
