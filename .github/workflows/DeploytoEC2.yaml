@@ -13,14 +13,23 @@ jobs:
     env:
       EC2_INSTANCE_ID: ${{ secrets.EC2_INSTANCE_ID }}
       APP_DIR: ${{ secrets.APP_DIR }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
 
     steps:
       #  Checkout the repo
       - name: Checkout code
         uses: actions/checkout@v3
 
-      #  Sync application code to EC2
-      - name: Deploy application code via SSM
+      #  Configure AWS credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      #  Deploy application code via SSM
+      - name: Deploy application code
         run: |
           echo "Deploying code to EC2 $EC2_INSTANCE_ID in $APP_DIR"
           aws ssm send-command \
@@ -28,5 +37,5 @@ jobs:
             --document-name "AWS-RunShellScript" \
             --comment "Deploy app code" \
             --parameters 'commands=["mkdir -p '"$APP_DIR"'", "rsync -av /github/workspace/ '"$APP_DIR"'"]' \
-            --region us-east-1 \
+            --region $AWS_REGION \
             --output json
