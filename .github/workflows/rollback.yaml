@@ -1,4 +1,4 @@
-name: Deploy Node.js App to Private EC2
+name: Rollback pipeline
 
 on:
   push:
