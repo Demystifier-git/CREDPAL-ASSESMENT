@@ -40,10 +40,12 @@ git clone https://github.com/Demystifier-git/CREDPAL-ASSESMENT.git
 
 Copy environment files:
 remove .example, .env will be left, before you run the command below
+
 cp src/.env.example src/.env
 cp database/.env.example database/.env 
 
-Start the application and database using Docker Compose:
+Start the application and database using Docker Compose
+
 docker compose up -d
 docker compose up --build
 
