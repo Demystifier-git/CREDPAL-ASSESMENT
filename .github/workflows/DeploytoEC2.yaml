@@ -16,11 +16,11 @@ jobs:
       AWS_REGION: ${{ secrets.AWS_REGION }}
 
     steps:
-      #  Checkout the repo
+      # 1️⃣ Checkout the repo
       - name: Checkout code
         uses: actions/checkout@v3
 
-      #  Configure AWS credentials
+      # 2️⃣ Configure AWS credentials
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -28,14 +28,25 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      #  Deploy application code via SSM as root
-      - name: Deploy application code as root
+      # 3️⃣ Deploy code via SSM streaming tar
+      - name: Deploy application code via SSM
         run: |
-          echo "Deploying code to EC2 $EC2_INSTANCE_ID in $APP_DIR as root"
+          echo "Deploying code to EC2 $EC2_INSTANCE_ID in $APP_DIR"
+
+          # Create remote directory as root
           aws ssm send-command \
             --targets "Key=instanceIds,Values=$EC2_INSTANCE_ID" \
             --document-name "AWS-RunShellScript" \
-            --comment "Deploy app code as root" \
-            --parameters 'commands=["sudo -i bash -c '\''mkdir -p '"$APP_DIR"' && rsync -av /github/workspace/ '"$APP_DIR"'\''"]' \
+            --comment "Create app directory" \
+            --parameters 'commands=["sudo mkdir -p '"$APP_DIR"'", "sudo chown -R ubuntu:ubuntu '"$APP_DIR"'"]' \
+            --region $AWS_REGION \
+            --output json
+
+          # Stream code via tar to EC2
+          tar -cf - . | aws ssm send-command \
+            --targets "Key=instanceIds,Values=$EC2_INSTANCE_ID" \
+            --document-name "AWS-RunShellScript" \
+            --comment "Deploy app code" \
+            --parameters 'commands=["sudo tar -xf - -C '"$APP_DIR"'"]' \
             --region $AWS_REGION \
             --output json
