@@ -120,6 +120,7 @@ Infrastructure is provisioned using Terraform:
 - Secrets Management: No secrets stored in GitHub code; all sensitive data is stored in environment secrets.
 - Zero-downtime Deployment: Ensures continuous availability during application updates.
 - Structured Logging: Enables easy monitoring and troubleshooting.  
+- terraform statefiles and terraform.tfvars was kept in .gitignore because it contains sensitive files.
 
 This setup provides a production-ready, fully automated DevOps pipeline for the Node.js application with secure, observable, and controlled deployment processes.
 
