@@ -68,7 +68,7 @@ This application can accessed live at app.delightdavid.online/health
                                       app.delightdavid.online/process
 
 
-##CI/CD PIPELINE
+## CI/CD PIPELINE
 3. CI/CD PIPELINE
 
 The CI/CD workflow is implemented using GitHub Actions. It includes the following steps:
