@@ -14,13 +14,12 @@ jobs:
       EC2_INSTANCE_ID: ${{ secrets.EC2_INSTANCE_ID }}
       APP_DIR: ${{ secrets.APP_DIR }}
       AWS_REGION: ${{ secrets.AWS_REGION }}
+      S3_BUCKET: ${{ secrets.DEPLOY_S3_BUCKET }}
 
     steps:
-      # 1️⃣ Checkout the repo
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2️⃣ Configure AWS credentials
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -28,25 +27,24 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # 3️⃣ Deploy code via SSM streaming tar
-      - name: Deploy application code via SSM
+      # 1️⃣ Upload code to S3 as a tarball
+      - name: Upload code to S3
         run: |
-          echo "Deploying code to EC2 $EC2_INSTANCE_ID in $APP_DIR"
+          tar -czf app.tar.gz .
+          aws s3 cp app.tar.gz s3://$S3_BUCKET/app.tar.gz
 
-          # Create remote directory as root
+      # 2️⃣ Deploy code to EC2 via SSM
+      - name: Deploy code via SSM
+        run: |
           aws ssm send-command \
             --targets "Key=instanceIds,Values=$EC2_INSTANCE_ID" \
             --document-name "AWS-RunShellScript" \
-            --comment "Create app directory" \
-            --parameters 'commands=["sudo mkdir -p '"$APP_DIR"'", "sudo chown -R ubuntu:ubuntu '"$APP_DIR"'"]' \
-            --region $AWS_REGION \
-            --output json
-
-          # Stream code via tar to EC2
-          tar -cf - . | aws ssm send-command \
-            --targets "Key=instanceIds,Values=$EC2_INSTANCE_ID" \
-            --document-name "AWS-RunShellScript" \
             --comment "Deploy app code" \
-            --parameters 'commands=["sudo tar -xf - -C '"$APP_DIR"'"]' \
+            --parameters 'commands=[
+              "sudo mkdir -p '"$APP_DIR"'",
+              "sudo chown -R ubuntu:ubuntu '"$APP_DIR"'",
+              "aws s3 cp s3://'"$S3_BUCKET"'/app.tar.gz /tmp/app.tar.gz",
+              "sudo tar -xzf /tmp/app.tar.gz -C '"$APP_DIR"'"
+            ]' \
             --region $AWS_REGION \
             --output json
