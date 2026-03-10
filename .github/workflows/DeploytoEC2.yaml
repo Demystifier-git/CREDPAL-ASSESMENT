@@ -14,12 +14,14 @@ jobs:
       EC2_INSTANCE_ID: ${{ secrets.EC2_INSTANCE_ID }}
       APP_DIR: ${{ secrets.APP_DIR }}
       AWS_REGION: ${{ secrets.AWS_REGION }}
-      S3_BUCKET: ${{ secrets.DEPLOY_S3_BUCKET }}
+      S3_BUCKET: ${{ secrets.S3_BUCKET }}
 
     steps:
-      - name: Checkout code
+      # 1️⃣ Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v3
 
+      # 2️⃣ Configure AWS credentials
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -27,15 +29,14 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # 1️⃣ Upload code to S3 as a tarball
-      - name: Upload code to S3
+      # 3️⃣ Package the application
+      - name: Package app
         run: |
           tar -czf app.tar.gz . --warning=no-file-changed
           aws s3 cp app.tar.gz s3://$S3_BUCKET/app.tar.gz
           
-
-      # 2️⃣ Deploy code to EC2 via SSM
-      - name: Deploy code via SSM
+      # 4️⃣ Deploy app to EC2 via SSM
+      - name: Deploy app to EC2
         run: |
           aws ssm send-command \
             --targets "Key=instanceIds,Values=$EC2_INSTANCE_ID" \
@@ -43,9 +44,9 @@ jobs:
             --comment "Deploy app code" \
             --parameters 'commands=[
               "sudo mkdir -p '"$APP_DIR"'",
-              "sudo chown -R ubuntu:ubuntu '"$APP_DIR"'",
-              "aws s3 cp s3://'"$S3_BUCKET"'/app.tar.gz /tmp/app.tar.gz",
-              "sudo tar -xzf /tmp/app.tar.gz -C '"$APP_DIR"'"
+              "sudo aws s3 cp s3://'"$S3_BUCKET"'/app.tar.gz /tmp/app.tar.gz",
+              "sudo tar -xzf /tmp/app.tar.gz -C '"$APP_DIR"'",
+              "sudo chown -R ubuntu:ubuntu '"$APP_DIR"'"
             ]' \
             --region $AWS_REGION \
             --output json

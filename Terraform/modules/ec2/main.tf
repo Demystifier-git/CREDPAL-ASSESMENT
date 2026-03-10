@@ -1,3 +1,4 @@
+#  Create IAM Role for EC2
 resource "aws_iam_role" "ec2_role" {
   name = "ec2-role"
 
@@ -11,11 +12,38 @@ resource "aws_iam_role" "ec2_role" {
   })
 }
 
+#  Create IAM Instance Profile for EC2
 resource "aws_iam_instance_profile" "ec2_profile" {
   name = "ec2-instance-profile"
   role = aws_iam_role.ec2_role.name
 }
 
+#  IAM Policy for S3 access
+resource "aws_iam_policy" "ec2_s3_policy" {
+  name        = "ec2-s3-access"
+  description = "Allow EC2 to read objects from S3 bucket"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = ["s3:GetObject", "s3:ListBucket"]
+        Resource = [
+          "arn:aws:s3:::${var.s3_bucket_name}",
+          "arn:aws:s3:::${var.s3_bucket_name}/*"
+        ]
+      }
+    ]
+  })
+}
+
+#  Attach the S3 policy to the EC2 role
+resource "aws_iam_role_policy_attachment" "ec2_s3_attach" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = aws_iam_policy.ec2_s3_policy.arn
+}
+
+#  EC2 Instance
 resource "aws_instance" "this" {
   ami                    = var.ami
   instance_type          = var.instance_type
@@ -23,5 +51,8 @@ resource "aws_instance" "this" {
   key_name               = var.key_name
   vpc_security_group_ids = var.security_group_ids
   iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
-  tags = { Name = var.name }
+
+  tags = {
+    Name = var.name
+  }
 }

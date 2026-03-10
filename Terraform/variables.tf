@@ -46,3 +46,8 @@ variable "subdomain" {
   type        = string
   default     = "app"
 }
+
+variable "s3_bucket_name" {
+  description = "The S3 bucket name where app code is stored"
+  type        = string
+}

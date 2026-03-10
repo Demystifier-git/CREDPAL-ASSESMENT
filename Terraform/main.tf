@@ -59,6 +59,7 @@ module "ec2" {
   security_group_ids = [module.web_sg.sg_id]
   key_name           = var.key_name
   ami                = var.ec2_ami
+  s3_bucket_name     = var.s3_bucket_name
 }
 
 module "lb_ssl" {
