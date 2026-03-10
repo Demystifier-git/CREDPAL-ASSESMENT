@@ -1,4 +1,4 @@
-# 1️⃣ Create IAM Role for EC2
+#  Create IAM Role for EC2
 resource "aws_iam_role" "ec2_role" {
   name = "ec2-role"
 
@@ -12,13 +12,13 @@ resource "aws_iam_role" "ec2_role" {
   })
 }
 
-# 2️⃣ Attach AmazonSSMManagedInstanceCore for SSM
+#  Attach AmazonSSMManagedInstanceCore for SSM
 resource "aws_iam_role_policy_attachment" "ec2_ssm_attach" {
   role       = aws_iam_role.ec2_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
-# 3️⃣ IAM Policy for S3 access
+#  IAM Policy for S3 access
 resource "aws_iam_policy" "ec2_s3_policy" {
   name        = "ec2-s3-access"
   description = "Allow EC2 to read objects from S3 bucket"
@@ -37,19 +37,19 @@ resource "aws_iam_policy" "ec2_s3_policy" {
   })
 }
 
-# 4️⃣ Attach the S3 policy to the EC2 role
+#  Attach the S3 policy to the EC2 role
 resource "aws_iam_role_policy_attachment" "ec2_s3_attach" {
   role       = aws_iam_role.ec2_role.name
   policy_arn = aws_iam_policy.ec2_s3_policy.arn
 }
 
-# 5️⃣ Create IAM Instance Profile
+#  Create IAM Instance Profile
 resource "aws_iam_instance_profile" "ec2_profile" {
   name = "ec2-instance-profile"
   role = aws_iam_role.ec2_role.name
 }
 
-# 6️⃣ EC2 Instance
+#  EC2 Instance
 resource "aws_instance" "this" {
   ami                    = var.ami
   instance_type          = var.instance_type
