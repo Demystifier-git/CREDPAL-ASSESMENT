@@ -1,0 +1,32 @@
+name: Deploy app to Private EC2
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      EC2_INSTANCE_ID: ${{ secrets.EC2_INSTANCE_ID }}
+      APP_DIR: ${{ secrets.APP_DIR }}
+
+    steps:
+      #  Checkout the repo
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      #  Sync application code to EC2
+      - name: Deploy application code via SSM
+        run: |
+          echo "Deploying code to EC2 $EC2_INSTANCE_ID in $APP_DIR"
+          aws ssm send-command \
+            --targets "Key=instanceIds,Values=$EC2_INSTANCE_ID" \
+            --document-name "AWS-RunShellScript" \
+            --comment "Deploy app code" \
+            --parameters 'commands=["mkdir -p '"$APP_DIR"'", "rsync -av /github/workspace/ '"$APP_DIR"'"]' \
+            --region us-east-1 \
+            --output json
