@@ -63,7 +63,10 @@ jobs:
               "sudo tar -xzf /tmp/app.tar.gz -C '"$APP_DIR"'",
               "sudo chown -R ubuntu:ubuntu '"$APP_DIR"'",
               "echo Deployment complete. Listing deployed files:",
-              "ls -la '"$APP_DIR"'"
+              "ls -la '"$APP_DIR"'",
+              "sudo su -",
+              "cd '"$APP_DIR"'",
+              "docker compose up -d"
             ]' \
             --region $AWS_REGION \
             --output json
