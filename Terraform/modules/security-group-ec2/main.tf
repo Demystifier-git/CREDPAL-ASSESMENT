@@ -13,6 +13,13 @@ resource "aws_security_group" "web" {
   }
 
   ingress {
+  from_port       = 3000
+  to_port         = 3000
+  protocol        = "tcp"
+  security_groups = [var.lb_security_group_id]
+}
+
+  ingress {
     description = "HTTPS from Load Balancer"
     from_port   = 443
     to_port     = 443

@@ -1,0 +1,68 @@
+name: Deploy Node.js App to Private EC2
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://app.delightdavid.online
+
+    env:
+      # Docker Hub credentials (GitHub Secrets)
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+      # Docker image
+      DOCKER_IMAGE: demystifier803/credpal-app:v1
+
+      # AWS info
+      EC2_INSTANCE_ID: ${{ secrets.EC2_INSTANCE_ID }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+
+    steps:
+      #  Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      #  Configure AWS credentials for SSM
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      #  Log in to Docker Hub
+      - name: Log in to Docker Hub
+        run: |
+          echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+
+      #  Deploy to EC2 using Docker Compose + Health Check
+      - name: Deploy app on EC2
+        run: |
+          echo "Deploying to EC2 $EC2_INSTANCE_ID..."
+          aws ssm send-command \
+            --targets "Key=instanceIds,Values=$EC2_INSTANCE_ID" \
+            --document-name "AWS-RunShellScript" \
+            --comment "Deploy Node.js app with Docker Compose" \
+            --parameters 'commands=[
+              "cd /home/ubuntu/project",
+              "docker-compose pull",
+              "docker-compose down",
+              "docker-compose up -d",
+              "echo Waiting for /health endpoint...",
+              "for i in {1..20}; do",
+              "  STATUS=$(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/health || echo 000)",
+              "  if [ \"$STATUS\" = \"200\" ]; then echo Health OK; break; fi",
+              "  echo Waiting 5s...; sleep 5",
+              "done"
+            ]' \
+            --region $AWS_REGION
+
+          echo "Deployment complete!"

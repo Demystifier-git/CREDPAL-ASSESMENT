@@ -9,6 +9,14 @@ resource "aws_security_group" "lb_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+   ingress {
+    description = "Allow HTTP for redirect"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -27,12 +35,43 @@ resource "aws_lb" "app" {
 
 resource "aws_lb_target_group" "app" {
   name     = "app-tg"
-  port     = 80
+  port     = 3000
   protocol = "HTTP"
   vpc_id   = var.vpc_id
   target_type = "instance"
+
+  health_check {
+    path                = "/"
+    protocol            = "HTTP"
+    port                = "traffic-port"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 3
+    unhealthy_threshold = 3
+    matcher             = "200"
+  }
 }
 
+# HTTP Listener (redirect to HTTPS)
+resource "aws_lb_listener" "http_redirect" {
+  load_balancer_arn = aws_lb.app.arn
+  port              = 80
+  protocol          = "HTTP"
+
+  default_action {
+    type = "redirect"
+
+    redirect {
+      protocol    = "HTTPS"
+      port        = "443"
+      status_code = "HTTP_301"
+    }
+  }
+}
+
+
+
+# HTTPS Listener
 resource "aws_lb_listener" "https" {
   load_balancer_arn = aws_lb.app.arn
   port              = 443
@@ -46,8 +85,13 @@ resource "aws_lb_listener" "https" {
   }
 }
 
+# Attach EC2 instance to Target Group
 resource "aws_lb_target_group_attachment" "web" {
   target_group_arn = aws_lb_target_group.app.arn
   target_id        = var.target_instance_id
-  port             = 80
+  port             = 3000
+
+  depends_on = [
+    aws_lb_listener.https
+  ]
 }
