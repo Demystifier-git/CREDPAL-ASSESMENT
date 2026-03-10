@@ -32,6 +32,7 @@ jobs:
       # 3️⃣ Package the application
       - name: Package app
         run: |
+          chmod -R u+rwX .
           tar -czf app.tar.gz . --warning=no-file-changed
           aws s3 cp app.tar.gz s3://$S3_BUCKET/app.tar.gz
           
