@@ -49,7 +49,7 @@ The application will be accessible on http://localhost:3000
 ## Accessing the application
 2. Accessing the Application
 
-Once deployed in production, the application can be accessed using the public URL of the load balancer:
+Once deployed in production, the application can be accessed using the public URL of the load balancer or domain.
 
 - GET /health - Check the health of the application and database.
 - GET /status - Check the status of the application.
