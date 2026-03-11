@@ -56,7 +56,7 @@ Once deployed in production, the application can be accessed using the public UR
 - POST /process - Submit JSON payloads to store data in the database.
 
 Example POST request:
-curl -X POST https://<your-app-domain>/process \
+curl -X POST https://your-app-domain/process \
   -H "Content-Type: application/json" \
   -d '{"key": "value"}'
 
